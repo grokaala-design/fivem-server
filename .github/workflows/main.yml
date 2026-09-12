@@ -111,6 +111,16 @@ jobs:
           Write-Host "PASS: $env:TEST_PASSWORD"
           Write-Host "================================"
 
+      - name: Notify Discord
+        shell: pwsh
+          DISCORD_NOTIFY_SECRET: ${{ secrets.DISCORD_NOTIFY_SECRET }}
+        run: |
+          $block = "========================" + [Environment]::NewLine + "RDP READY" + [Environment]::NewLine + "IP: $env:TS_IP" + [Environment]::NewLine + "USER: $env:TEST_USER" + [Environment]::NewLine + "PASS: $env:TEST_PASSWORD" + [Environment]::NewLine + "========================"
+
+          $payload = @{ content = $block } | ConvertTo-Json
+
+          Invoke-RestMethod -Uri "https://gordp-discord-bot.gordp-discord-bot.workers.dev/notify" -Method Post -Headers @{ "X-Notify-Secret" = $env:DISCORD_NOTIFY_SECRET } -ContentType "application/json" -Body $payload
+
       - name: Validate RDP
         shell: pwsh
         run: |
